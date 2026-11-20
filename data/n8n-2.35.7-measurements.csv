@@ -1,0 +1,6 @@
+date,test,executions,concurrency,throughput_per_s,p50_ms,p95_ms,rss_main_mb,rss_runner_mb,rss_peak_total_mb,errors
+2026-11-19,idle_first_start_32s,0,0,,,,712,137,849,0
+2026-11-20,idle_37s,0,0,,,,418,137,555,0
+2026-11-20,webhook_code_sequential,100,1,13.5,82,141,,,656,0
+2026-11-20,webhook_code_parallel,1000,10,26.5,351,565,,,780,0
+2026-11-20,heavy_code_5M_loop_parallel,200,10,33.1,298,378,,,763,0

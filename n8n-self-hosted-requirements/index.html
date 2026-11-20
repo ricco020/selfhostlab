@@ -81,7 +81,7 @@ N8N_PORT=5799 npx n8n import:workflow --input=wf.json   <a href="wf.json">(downl
 N8N_PORT=5799 npx n8n start
 # then, in another shell, sample memory every 0.3 s:
 ps -eo rss,args | grep -E 'n8n start|disallow-code-generation'</pre>
-<p>The workflow is a Webhook node (POST, respond with the last node) followed by a Code node that sums the integers up to <code>n</code>. Load was sent from the same server with 1 or 10 Python threads, so network latency is not included.</p>
+<p>The workflow is a Webhook node (POST, respond with the last node) followed by a Code node that sums the integers up to <code>n</code>. Load was sent from the same server with 1 or 10 Python threads (<a href="https://github.com/ricco020/selfhostlab/tree/main/data">script and raw CSV on GitHub</a>), so network latency is not included.</p>
 
 <h2>Limits of this test</h2>
 <ul>
