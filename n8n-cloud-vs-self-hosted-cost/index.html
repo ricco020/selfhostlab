@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>n8n Cloud vs Self-Hosted Cost Calculator (prices read 20 Nov 2026)</title>
+<meta name="description" content="Enter your monthly executions: see which n8n Cloud plan you need, what a self-hosted VPS costs over 1, 2 and 4 years, and the server size our RAM tests point to.">
+<link rel="canonical" href="https://ricco020.github.io/selfhostlab/n8n-cloud-vs-self-hosted-cost/">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"WebApplication","name":"n8n Cloud vs self-hosted cost calculator","applicationCategory":"BusinessApplication","operatingSystem":"Any (browser)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"url":"https://ricco020.github.io/selfhostlab/n8n-cloud-vs-self-hosted-cost/"},
+{"@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Is self-hosted n8n cheaper than n8n Cloud?","acceptedAnswer":{"@type":"Answer","text":"Usually, in hosting cost. The Community Edition is free and a 4 GB VPS cost $6.49 per month on a 24-month term ($11.99 at renewal) on 20 Nov 2026, against 20 EUR per month billed annually for n8n Cloud Starter (2,500 executions) and 50 EUR for Pro (10,000). The price of self-hosting is your time: updates, backups and security."}},
+{"@type":"Question","name":"How many executions can a small VPS handle?","acceptedAnswer":{"@type":"Answer","text":"In our test a simple Webhook plus Code workflow ran at 13.5 executions per second one at a time, about 35 million per month if it ran non stop. Memory, not executions, decides the server size: n8n peaked at 780 MB."}},
+{"@type":"Question","name":"What happens above 10,000 executions per month on n8n Cloud?","acceptedAnswer":{"@type":"Answer","text":"On the pricing page read on 20 Nov 2026, Pro includes 10,000 executions per month. The Business plan (40,000 executions, 667 EUR per month billed annually) is listed as self-hosted only, so larger cloud volumes go to Enterprise, priced on request."}}]}
+]}
+</script>
+<style>
+.calc{background:#fbf8f0;border:2px solid var(--ink);padding:18px;margin:1.2rem 0;box-shadow:6px 6px 0 var(--ink)}
+.calc label{display:block;font:600 .85rem 'JetBrains Mono',monospace;margin:.8rem 0 .3rem}
+.calc input,.calc select{width:100%;font:400 1rem 'JetBrains Mono',monospace;padding:10px;border:2px solid var(--ink);background:#fff}
+.out{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px;margin-top:16px}
+.box{border:2px solid var(--ink);padding:12px;background:var(--paper)}
+.box .k{font:600 .72rem 'JetBrains Mono',monospace;color:var(--mute);text-transform:uppercase}
+.box .v{font:800 1.5rem 'Fraunces',serif;margin:.2rem 0}
+.box.self{background:var(--term);color:#efe9da}.box.self .k{color:#ffb38a}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><a class="brand" href="../">self<b>host</b>lab</a><span class="tag">measured on a real VPS, not copied from docs</span></div></header>
+<main class="wrap">
+<h1>n8n Cloud vs self-hosted: cost calculator</h1>
+<p class="meta">Prices read on n8n.io/pricing and hostinger.com/vps-hosting on 20 Nov 2026 · server sizes from <a href="../n8n-self-hosted-requirements/">our n8n RAM tests</a></p>
+<div class="calc" id="calc">
+<label for="ex">Workflow executions per month</label>
+<input id="ex" type="number" min="0" step="100" value="5000" inputmode="numeric">
+<label for="db">What runs next to n8n on the server?</label>
+<select id="db"><option value="0">Nothing (SQLite, one user)</option><option value="1" selected>PostgreSQL + reverse proxy</option><option value="2">Queue mode with workers, or other apps</option></select>
+<div class="out" aria-live="polite">
+<div class="box"><div class="k">n8n Cloud plan needed</div><div class="v" id="cp">Pro</div><div id="cc">50 EUR/mo billed annually</div></div>
+<div class="box self"><div class="k">Self-hosted server</div><div class="v" id="sp">KVM 1</div><div id="sc">$6.49/mo</div></div>
+<div class="box"><div class="k">4-year hosting total</div><div class="v" id="t4">...</div><div id="t4n" class="note"></div></div>
+</div>
+<a class="cta" id="go" href="https://www.hostg.xyz/aff_c?offer_id=815&amp;aff_id=246839&amp;url=https%3A%2F%2Fwww.hostinger.com%2Fvps-hosting%3Futm_medium%3Daffiliate%26utm_source%3Daff246839%26utm_campaign%3D815%26session%3D%7Btransaction_id%7D&amp;aff_sub=selfhostlab-n8n-calculator" rel="sponsored noopener" target="_blank">See this VPS on Hostinger →</a>
+</div>
+<script id="core">
+// Prices read 20 Nov 2026. Cloud: n8n.io/pricing (annual billing). VPS: hostinger.com/vps-hosting, 24-month term.
+const CLOUD=[{n:"Starter",max:2500,eur:20},{n:"Pro",max:10000,eur:50}];
+const VPS={1:{n:"KVM 1",spec:"1 vCPU, 4 GB",promo:6.49,renew:11.99},2:{n:"KVM 2",spec:"2 vCPU, 8 GB",promo:8.79,renew:14.99}};
+function cloudPlan(ex){for(const p of CLOUD) if(ex<=p.max) return p; return null;}
+function vpsFor(load){return load>=2?VPS[2]:VPS[1];} // SQLite-only fits 2 GB, but Hostinger's smallest VPS is 4 GB
+function vpsTotal(v,months){const first=Math.min(months,24);return v.promo*first+v.renew*Math.max(0,months-24);}
+if(typeof module!=="undefined")module.exports={cloudPlan,vpsFor,vpsTotal};
+</script>
+<script>
+function upd(){const ex=Math.max(0,+document.getElementById('ex').value||0),load=+document.getElementById('db').value;
+const c=cloudPlan(ex),v=vpsFor(load),t=vpsTotal(v,48);
+document.getElementById('cp').textContent=c?c.n:"Enterprise";
+document.getElementById('cc').textContent=c?c.eur+" EUR/mo billed annually ("+(c.eur*48)+" EUR over 4 years), "+c.max.toLocaleString('en')+" executions":"above 10,000 executions: Enterprise, price on request";
+document.getElementById('sp').textContent=v.n;
+document.getElementById('sc').textContent=v.spec+", $"+v.promo+"/mo for 24 months, then $"+v.renew+"/mo";
+document.getElementById('t4').textContent="$"+t.toFixed(2);
+document.getElementById('t4n').textContent="self-hosted VPS over 48 months (24 at promo + 24 at renewal), before tax. n8n Community Edition: free.";}
+document.getElementById('ex').addEventListener('input',upd);document.getElementById('db').addEventListener('change',upd);upd();
+</script>
+
+<h2>How the calculator decides</h2>
+<ul>
+<li><strong>Cloud plan</strong>: the smallest plan whose monthly executions cover yours. Starter: 2,500 executions, 20 EUR/mo billed annually. Pro: 10,000 executions, 50 EUR/mo billed annually. Above that, the pricing page lists Business (40,000 executions, 667 EUR/mo) as self-hosted only, so cloud goes to Enterprise.</li>
+<li><strong>Server size</strong>: executions do not decide it, memory does. In <a href="../n8n-self-hosted-requirements/">our test</a> n8n ran 26.5 executions per second with 10 in parallel (millions per month) and peaked at 780 MB of RAM. With PostgreSQL and a proxy we keep 4 GB. With workers or other apps, 8 GB.</li>
+<li><strong>Cost over time</strong>: promo price for the first 24 months, then the renewal price Hostinger shows on the plan card. That is the line most comparisons leave out.</li>
+</ul>
+
+<h2>What the hosting bill does not show</h2>
+<p>Self-hosting moves work to you: n8n updates, OS patches, backups of the database and the encryption key, HTTPS. Cloud includes them. Some features also differ between editions (the pricing page compares Cloud and self-hosted plan by plan). If you would not notice a broken backup for a month, Cloud Starter is the safer buy.</p>
+
+<p class="note">Affiliate disclosure: the Hostinger button is an affiliate link. If you buy, we may earn a commission at no extra cost to you. n8n has no affiliate link here. Prices change often: check both pricing pages before paying. EUR and USD are shown as each vendor displays them, without conversion.</p>
+
+<h2>FAQ</h2>
+<dl class="faq">
+<dt>Is self-hosted n8n cheaper than n8n Cloud?</dt><dd>In hosting cost, usually yes: $6.49/mo for a 4 GB VPS on a 24-month term ($11.99 at renewal) against 20 EUR/mo for Starter and 50 EUR/mo for Pro, billed annually. The price is your maintenance time.</dd>
+<dt>How many executions can a small VPS handle?</dt><dd>Far more than the cloud plans include: 13.5 per second one at a time in our test. Memory decides the server size, not executions.</dd>
+<dt>What happens above 10,000 executions per month on n8n Cloud?</dt><dd>Pro stops at 10,000. Business is listed as self-hosted only, so larger cloud volumes go to Enterprise, priced on request.</dd>
+</dl>
+</main>
+<footer><div class="wrap"><a href="../">SelfHostLab home</a> · <a href="../n8n-self-hosted-requirements/">n8n RAM requirements, measured</a> · Affiliate disclosure: some links earn us a commission.</div></footer>
+</body></html>
