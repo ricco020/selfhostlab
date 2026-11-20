@@ -1,0 +1,3 @@
+# SelfHostLab
+> Self-hosted apps measured on a real VPS (RAM, CPU, disk), with reproducible commands.
+- [n8n self-hosted requirements, measured](https://ricco020.github.io/selfhostlab/n8n-self-hosted-requirements/): n8n 2.35.7 uses 555-850 MB RAM idle, 780 MB peak at 1,000 webhook runs with 10 in parallel; 2 GB minimum, 4 GB with PostgreSQL.

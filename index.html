@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SelfHostLab: VPS sizes for self-hosted apps, measured</title>
+<meta name="description" content="How much RAM and CPU self-hosted apps really use, measured on a real VPS: n8n first, with the exact commands so you can reproduce every number.">
+<link rel="canonical" href="https://ricco020.github.io/selfhostlab/">
+<link rel="stylesheet" href="style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"SelfHostLab","url":"https://ricco020.github.io/selfhostlab/","description":"Self-hosted apps measured on a real VPS: RAM, CPU, disk."}</script>
+</head>
+<body>
+<header class="top"><div class="wrap"><a class="brand" href="./">self<b>host</b>lab</a><span class="tag">measured on a real VPS, not copied from docs</span></div></header>
+<main class="wrap">
+<h1>How big a VPS does your self-hosted app need?</h1>
+<p class="lede">Hosting guides quote minimums nobody tested. We install each app on a VPS, load it, read the memory of every process and publish the numbers with the commands to reproduce them.</p>
+<div class="tbl"><table>
+<tr><th>App</th><th>Version</th><th>RAM idle</th><th>RAM peak (tested load)</th><th>Smallest sensible VPS</th></tr>
+<tr><td><a href="n8n-self-hosted-requirements/">n8n</a></td><td>2.35.7</td><td class="n">555 to 850 MB</td><td class="n">780 MB (1,000 runs, 10 parallel)</td><td>2 GB, 4 GB with PostgreSQL</td></tr>
+</table></div>
+<div class="cards">
+<a class="card" href="n8n-self-hosted-requirements/"><span class="k">MEASURED 20 NOV 2026</span><h3>n8n self-hosted requirements</h3>RAM at idle and under 1,000 webhook executions, disk per execution, which server size to pick.</a>
+</div>
+<h2>How we test</h2>
+<p>Test server: Contabo Cloud VPS, 8 AMD EPYC vCPU, 23 GB RAM, Ubuntu, Node.js 22. Each app runs in a throwaway folder, is measured with <code>ps</code> sampled every 0.3 s, then removed. We state the limits of every test (install method, database, number of workflows) next to the numbers.</p>
+<p class="note">Some links on this site are affiliate links: we may earn a commission if you buy, at no extra cost to you. Measurements are never changed for a sponsor.</p>
+</main>
+<footer><div class="wrap">SelfHostLab · 2026</div></footer>
+</body></html>

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ricco020.github.io/selfhostlab/sitemap.xml

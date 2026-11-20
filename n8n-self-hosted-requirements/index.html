@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>n8n Self-Hosted Requirements: RAM Measured Under Load (2026)</title>
+<meta name="description" content="We installed n8n 2.35.7 on a VPS and measured it: 555 to 850 MB RAM idle, 780 MB peak at 1,000 webhook runs. What that means for 1, 2, 4 and 8 GB servers.">
+<link rel="canonical" href="https://ricco020.github.io/selfhostlab/n8n-self-hosted-requirements/">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","headline":"n8n self-hosted requirements: RAM measured under load","datePublished":"2026-11-20","dateModified":"2026-11-20","author":{"@type":"Organization","name":"SelfHostLab"},"publisher":{"@type":"Organization","name":"SelfHostLab"},"mainEntityOfPage":"https://ricco020.github.io/selfhostlab/n8n-self-hosted-requirements/","proficiencyLevel":"Beginner","dependencies":"Node.js 22, n8n 2.35.7"},
+{"@type":"Dataset","name":"n8n 2.35.7 memory and throughput on an 8 vCPU VPS","description":"Resident memory (RSS) of the n8n main process and task runner at idle and under webhook load, measured on 19 and 20 November 2026.","creator":{"@type":"Organization","name":"SelfHostLab"},"temporalCoverage":"2026-11-19/2026-11-20","variableMeasured":["RSS memory (MB)","executions per second","latency p50/p95 (ms)"]},
+{"@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Can n8n run on a 1 GB VPS?","acceptedAnswer":{"@type":"Answer","text":"Not reliably. In our test n8n alone used 555 to 850 MB at idle and peaked at 780 MB under load, before counting the operating system, a reverse proxy or a database. 2 GB is the practical floor."}},
+{"@type":"Question","name":"How much RAM does n8n need?","acceptedAnswer":{"@type":"Answer","text":"n8n 2.35.7 with SQLite and the default task runner used 555 MB about 37 seconds after start (850 MB on a first start with migrations) and peaked at 780 MB while serving 1,000 webhook executions at 10 concurrent requests. Plan 2 GB for light personal use, 4 GB if you add PostgreSQL and a reverse proxy."}},
+{"@type":"Question","name":"Is n8n CPU intensive?","acceptedAnswer":{"@type":"Answer","text":"For simple workflows, no. A Webhook plus Code workflow ran at 13.5 executions per second one at a time and 26.5 per second with 10 in parallel, with no errors. Heavy Code nodes and many parallel executions are what consume CPU."}},
+{"@type":"Question","name":"How much disk space does self-hosted n8n need?","acceptedAnswer":{"@type":"Answer","text":"The npm install takes 2.9 GB. The SQLite database grew to 11.6 MB (including the WAL file) after about 1,310 small executions, roughly 9 KB each. Execution logs are pruned by default, so 20 GB is enough for most single-user setups."}}]}
+]}
+</script>
+</head>
+<body>
+<header class="top"><div class="wrap"><a class="brand" href="../">self<b>host</b>lab</a><span class="tag">measured on a real VPS, not copied from docs</span></div></header>
+<main class="wrap">
+<h1>n8n self-hosted requirements, measured</h1>
+<p class="meta">n8n 2.35.7 · Node.js 22.22.2 · SQLite · tests run 19 and 20 Nov 2026 · published 20 Nov 2026</p>
+<div class="verdict"><strong>Short answer.</strong> n8n used <strong>555 to 850 MB</strong> of RAM at idle and peaked at <strong>780 MB</strong> while it answered 1,000 webhook calls. A 1 GB server will swap or crash. <strong>2 GB</strong> works for one person and light workflows. <strong>4 GB</strong> leaves room for PostgreSQL, a reverse proxy and growth.<br>
+<a class="cta" href="https://www.hostg.xyz/aff_c?offer_id=815&amp;aff_id=246839&amp;url=https%3A%2F%2Fwww.hostinger.com%2Fvps-hosting%3Futm_medium%3Daffiliate%26utm_source%3Daff246839%26utm_campaign%3D815%26session%3D%7Btransaction_id%7D&amp;aff_sub=selfhostlab-n8n-requirements" rel="sponsored noopener" target="_blank">See 4 GB / 8 GB VPS prices (Hostinger) →</a></div>
+
+<p class="lede">Most guides repeat a minimum (often "1 vCPU, 2 GB RAM") without showing where it comes from. We installed n8n on a VPS, started it, sent it real executions and read the memory of every n8n process. Here are the numbers, how we got them and what server size they point to.</p>
+
+<h2>What we measured</h2>
+<p>The test server is a Contabo Cloud VPS with 8 AMD EPYC vCPU and 23 GB of RAM, so memory was never constrained: the figures below are what n8n <em>asks for</em>, not what it squeezes into. We installed n8n with <code>npm install n8n</code> (no Docker), kept the default SQLite database and the default task runner (the separate process that executes Code nodes), and summed the resident memory (RSS) of the main process and the runner with <code>ps</code>, sampled every 0.3 s.</p>
+<div class="tbl"><table>
+<tr><th>Situation</th><th>Executions</th><th>Throughput</th><th>Latency p50 / p95</th><th>RAM (main + runner)</th></tr>
+<tr><td>Idle, 32 s after first start (19 Nov)</td><td class="n">0</td><td class="n">n/a</td><td class="n">n/a</td><td class="n">712 + 137 = 849 MB</td></tr>
+<tr><td>Idle, 37 s after start (20 Nov)</td><td class="n">0</td><td class="n">n/a</td><td class="n">n/a</td><td class="n">418 + 137 = 555 MB</td></tr>
+<tr><td>Webhook + Code, one at a time</td><td class="n">100</td><td class="n">13.5 /s</td><td class="n">82 / 141 ms</td><td class="n">peak 656 MB</td></tr>
+<tr><td>Webhook + Code, 10 in parallel</td><td class="n">1,000</td><td class="n">26.5 /s</td><td class="n">351 / 565 ms</td><td class="n">peak 780 MB, 687 MB after</td></tr>
+<tr><td>Heavy Code node (5M-step loop), 10 in parallel</td><td class="n">200</td><td class="n">33.1 /s</td><td class="n">298 / 378 ms</td><td class="n">peak 763 MB</td></tr>
+</table></div>
+<p class="note">Zero failed requests across 1,310 executions. The 19 Nov first start includes database migrations, which explains the higher idle figure. The <code>npm exec</code> wrapper (74 MB) is not counted because <code>n8n start</code> launched directly does not need it.</p>
+
+<figure>
+<svg viewBox="0 0 640 300" role="img" aria-label="Bar chart of n8n memory use against 1 GB and 2 GB server sizes">
+<rect width="640" height="300" fill="#fbf8f0" stroke="#1d1b16"/>
+<line x1="60" y1="250" x2="620" y2="250" stroke="#1d1b16"/>
+<line x1="60" y1="140" x2="620" y2="140" stroke="#d9480f" stroke-dasharray="6 4"/><text x="64" y="134" font-family="JetBrains Mono,monospace" font-size="12" fill="#d9480f">1 GB server (before OS)</text>
+<line x1="60" y1="30" x2="620" y2="30" stroke="#2b8a3e" stroke-dasharray="6 4"/><text x="64" y="24" font-family="JetBrains Mono,monospace" font-size="12" fill="#2b8a3e">2 GB server</text>
+<g font-family="JetBrains Mono,monospace" font-size="12" fill="#1d1b16">
+<rect x="90" y="159" width="80" height="91" fill="#1d1b16"/><text x="98" y="153">849 MB</text><text x="84" y="268">idle, 1st</text>
+<rect x="200" y="191" width="80" height="59" fill="#1d1b16"/><text x="208" y="185">555 MB</text><text x="210" y="268">idle</text>
+<rect x="310" y="180" width="80" height="70" fill="#6b6457"/><text x="318" y="174">656 MB</text><text x="304" y="268">100 seq.</text>
+<rect x="420" y="167" width="80" height="83" fill="#d9480f"/><text x="428" y="161">780 MB</text><text x="408" y="268">1,000 x10</text>
+<rect x="530" y="169" width="80" height="81" fill="#6b6457"/><text x="538" y="163">763 MB</text><text x="526" y="268">heavy x10</text>
+</g></svg>
+<figcaption>Peak RSS of n8n (main process + task runner) in each test, drawn to scale against 1 GB and 2 GB of RAM. Our measurements, 19 and 20 Nov 2026.</figcaption>
+</figure>
+
+<h2>Which server size, then?</h2>
+<p>Add roughly 200 to 300 MB for a minimal Linux system, and more for anything else you run next to n8n (Caddy or Nginx, PostgreSQL, Redis for queue mode). That gives:</p>
+<div class="tbl"><table>
+<tr><th>RAM</th><th>Verdict from our numbers</th><th>Example plan (Hostinger, price read 20 Nov 2026)</th></tr>
+<tr><td class="n">1 GB</td><td>No. n8n alone reaches 780 MB under load, and 850 MB on a first start.</td><td>not offered on Hostinger VPS</td></tr>
+<tr><td class="n">2 GB</td><td>Possible for one user, SQLite, light workflows. Add swap. Little room for a database.</td><td>not offered on Hostinger VPS</td></tr>
+<tr><td class="n">4 GB</td><td>Comfortable: n8n + PostgreSQL + reverse proxy, with about 2.5 GB of headroom.</td><td>KVM 1: 1 vCPU, 4 GB, 50 GB NVMe, $6.49/mo on 24 months ($155.76 paid upfront), renews $11.99/mo</td></tr>
+<tr><td class="n">8 GB</td><td>Queue mode with workers, many parallel runs, or n8n next to other self-hosted apps.</td><td>KVM 2: 2 vCPU, 8 GB, 100 GB NVMe, $8.79/mo on 24 months ($210.96), renews $14.99/mo</td></tr>
+</table></div>
+<p><a class="cta" href="https://www.hostg.xyz/aff_c?offer_id=815&amp;aff_id=246839&amp;url=https%3A%2F%2Fwww.hostinger.com%2Fvps-hosting%3Futm_medium%3Daffiliate%26utm_source%3Daff246839%26utm_campaign%3D815%26session%3D%7Btransaction_id%7D&amp;aff_sub=selfhostlab-n8n-requirements" rel="sponsored noopener" target="_blank">Compare KVM 1 and KVM 2 on Hostinger →</a></p>
+<p class="note">Prices are the ones shown on hostinger.com/vps-hosting on 20 Nov 2026 for a 24-month term, before tax. They change often: check the order page before paying. This link is an affiliate link: if you buy, we may earn a commission at no extra cost to you. It does not change the numbers above, which come from our own server.</p>
+
+<h2>CPU: is one vCPU enough?</h2>
+<p>For webhook-style workflows, n8n is not CPU bound. Even the test with a 5-million-step loop in a Code node kept p95 latency under 400 ms with 10 runs in parallel. Our server had 8 vCPU, so a 1 vCPU plan will be slower under parallel load: we have not measured it yet and will not guess a figure. If you expect bursts of parallel executions or heavy Code nodes, 2 vCPU is the safer choice.</p>
+
+<h2>Disk space</h2>
+<p>The npm install pulled 2,266 packages and took 2.9 GB on disk (3 min 20 s with a warm npm cache, 5 min 43 s without). After about 1,310 executions the SQLite database was 7.6 MB plus a 4 MB write-ahead log, so about 9 KB per execution of this small workflow. Workflows that move files or large JSON store much more per run. Self-hosted n8n prunes old executions by default, so 20 GB of disk is enough for a single-user setup that does not keep binary data.</p>
+
+<h2>How to reproduce this test</h2>
+<pre>npm install n8n@2.35.7
+N8N_PORT=5799 npx n8n import:workflow --input=wf.json   <a href="wf.json">(download wf.json)</a>
+N8N_PORT=5799 npx n8n start
+# then, in another shell, sample memory every 0.3 s:
+ps -eo rss,args | grep -E 'n8n start|disallow-code-generation'</pre>
+<p>The workflow is a Webhook node (POST, respond with the last node) followed by a Code node that sums the integers up to <code>n</code>. Load was sent from the same server with 1 or 10 Python threads, so network latency is not included.</p>
+
+<h2>Limits of this test</h2>
+<ul>
+<li>npm install, not Docker. The official Docker image adds the container overhead (not measured here).</li>
+<li>SQLite, not PostgreSQL, and no queue mode.</li>
+<li>One workflow. Many active workflows with triggers and polling nodes will raise idle memory.</li>
+<li>8 vCPU host: throughput on smaller plans will be lower.</li>
+</ul>
+
+<h2>FAQ</h2>
+<dl class="faq">
+<dt>Can n8n run on a 1 GB VPS?</dt><dd>Not reliably. n8n alone used 555 to 850 MB at idle and 780 MB at peak in our test, before the operating system and anything else. 2 GB is the practical floor.</dd>
+<dt>How much RAM does n8n need?</dt><dd>Plan 2 GB for light personal use with SQLite, 4 GB if you add PostgreSQL and a reverse proxy, 8 GB for queue mode or several apps on the same server.</dd>
+<dt>Is n8n CPU intensive?</dt><dd>Not for simple workflows: 13.5 executions per second one at a time, 26.5 per second with 10 in parallel, no errors. Heavy Code nodes and parallel bursts are what use CPU.</dd>
+<dt>How much disk space does self-hosted n8n need?</dt><dd>2.9 GB for the install, plus about 9 KB per small execution in SQLite. 20 GB is enough for most single-user setups.</dd>
+</dl>
+</main>
+<footer><div class="wrap"><a href="../">SelfHostLab home</a> · Measurements by SelfHostLab on our own VPS. Affiliate disclosure: some links earn us a commission. No sponsored rankings.</div></footer>
+</body></html>
