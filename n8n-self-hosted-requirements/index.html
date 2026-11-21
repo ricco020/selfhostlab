@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>n8n Self-Hosted Requirements: RAM Measured Under Load (2026)</title>
 <meta name="description" content="We installed n8n 2.35.7 on a VPS and measured it: 555 to 850 MB RAM idle, 780 MB peak at 1,000 webhook runs. What that means for 1, 2, 4 and 8 GB servers.">
-<link rel="canonical" href="https://ricco020.github.io/selfhostlab/n8n-self-hosted-requirements/">
+<link rel="canonical" href="https://selfhostlab.org/n8n-self-hosted-requirements/">
 <link rel="stylesheet" href="../style.css">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
-{"@type":"TechArticle","headline":"n8n self-hosted requirements: RAM measured under load","datePublished":"2026-11-20","dateModified":"2026-11-20","author":{"@type":"Organization","name":"SelfHostLab"},"publisher":{"@type":"Organization","name":"SelfHostLab"},"mainEntityOfPage":"https://ricco020.github.io/selfhostlab/n8n-self-hosted-requirements/","proficiencyLevel":"Beginner","dependencies":"Node.js 22, n8n 2.35.7"},
+{"@type":"TechArticle","headline":"n8n self-hosted requirements: RAM measured under load","datePublished":"2026-11-20","dateModified":"2026-11-20","author":{"@type":"Organization","name":"SelfHostLab"},"publisher":{"@type":"Organization","name":"SelfHostLab"},"mainEntityOfPage":"https://selfhostlab.org/n8n-self-hosted-requirements/","proficiencyLevel":"Beginner","dependencies":"Node.js 22, n8n 2.35.7"},
 {"@type":"Dataset","name":"n8n 2.35.7 memory and throughput on an 8 vCPU VPS","description":"Resident memory (RSS) of the n8n main process and task runner at idle and under webhook load, measured on 19 and 20 November 2026.","creator":{"@type":"Organization","name":"SelfHostLab"},"temporalCoverage":"2026-11-19/2026-11-20","variableMeasured":["RSS memory (MB)","executions per second","latency p50/p95 (ms)"]},
 {"@type":"FAQPage","mainEntity":[
 {"@type":"Question","name":"Can n8n run on a 1 GB VPS?","acceptedAnswer":{"@type":"Answer","text":"Not reliably. In our test n8n alone used 555 to 850 MB at idle and peaked at 780 MB under load, before counting the operating system, a reverse proxy or a database. 2 GB is the practical floor."}},

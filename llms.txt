@@ -1,4 +1,4 @@
 # SelfHostLab
 > Self-hosted apps measured on a real VPS (RAM, CPU, disk), with reproducible commands.
-- [n8n self-hosted requirements, measured](https://ricco020.github.io/selfhostlab/n8n-self-hosted-requirements/): n8n 2.35.7 uses 555-850 MB RAM idle, 780 MB peak at 1,000 webhook runs with 10 in parallel; 2 GB minimum, 4 GB with PostgreSQL.
-- [n8n Cloud vs self-hosted cost calculator](https://ricco020.github.io/selfhostlab/n8n-cloud-vs-self-hosted-cost/): cloud plan by monthly executions (Starter 2,500 at 20 EUR/mo, Pro 10,000 at 50 EUR/mo, annual billing) vs 4-year VPS cost with renewal.
+- [n8n self-hosted requirements, measured](https://selfhostlab.org/n8n-self-hosted-requirements/): n8n 2.35.7 uses 555-850 MB RAM idle, 780 MB peak at 1,000 webhook runs with 10 in parallel; 2 GB minimum, 4 GB with PostgreSQL.
+- [n8n Cloud vs self-hosted cost calculator](https://selfhostlab.org/n8n-cloud-vs-self-hosted-cost/): cloud plan by monthly executions (Starter 2,500 at 20 EUR/mo, Pro 10,000 at 50 EUR/mo, annual billing) vs 4-year VPS cost with renewal.
