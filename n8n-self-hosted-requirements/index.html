@@ -103,6 +103,7 @@ ps -eo rss,args | grep -E 'n8n start|disallow-code-generation'</pre>
 <dt>Is n8n CPU intensive?</dt><dd>Not for simple workflows: 13.5 executions per second one at a time, 26.5 per second with 10 in parallel, no errors. Heavy Code nodes and parallel bursts are what use CPU.</dd>
 <dt>How much disk space does self-hosted n8n need?</dt><dd>2.9 GB for the install, plus about 9 KB per small execution in SQLite. 20 GB is enough for most single-user setups.</dd>
 </dl>
+<p>Running a local AI model next to n8n? See our <a href="../ollama-vps/">Ollama on a VPS measurements</a>: Llama 3.1 8B needs 5.4 GB of RAM on top of n8n.</p>
 </main>
 <footer><div class="wrap"><a href="../">SelfHostLab home</a> · Measurements by SelfHostLab on our own VPS. Affiliate disclosure: some links earn us a commission. No sponsored rankings.</div></footer>
 </body></html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ollama on a VPS Without GPU: Tokens/s and RAM Measured (2026)</title>
+<meta name="description" content="We ran Ollama 0.40.17 on a CPU-only VPS: Llama 3.2 1B at 28 tok/s, 3B at 21 tok/s, Llama 3.1 8B at 9 tok/s on 4 vCPU, 5.4 GB RAM for 8B. Which VPS to buy.">
+<link rel="canonical" href="https://selfhostlab.org/ollama-vps/">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","headline":"Ollama on a VPS without GPU: tokens per second and RAM measured","datePublished":"2026-11-22","dateModified":"2026-11-22","author":{"@type":"Organization","name":"SelfHostLab"},"publisher":{"@type":"Organization","name":"SelfHostLab"},"mainEntityOfPage":"https://selfhostlab.org/ollama-vps/","dependencies":"Ollama 0.40.17"},
+{"@type":"Dataset","name":"Ollama 0.40.17 CPU inference speed and memory on a VPS","description":"Generation speed (tokens per second), cold load time and resident memory of Llama 3.2 1B, Llama 3.2 3B and Llama 3.1 8B on 4 and 8 AMD EPYC vCPU, 3 runs each, 22 November 2026.","creator":{"@type":"Organization","name":"SelfHostLab"},"temporalCoverage":"2026-11-22","variableMeasured":["generation tokens per second","prompt tokens per second","cold load time (s)","RSS memory (MB)"]},
+{"@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Can Ollama run on a VPS without a GPU?","acceptedAnswer":{"@type":"Answer","text":"Yes. On 4 AMD EPYC vCPU with no GPU, Ollama 0.40.17 generated 27 to 30 tokens per second with Llama 3.2 1B, 18 to 22 with Llama 3.2 3B and 8.6 to 9.3 with Llama 3.1 8B (Q4_K_M). That is readable chat speed for 1B and 3B, and slow but usable for 8B."}},
+{"@type":"Question","name":"How much RAM does Ollama need for Llama 3.1 8B?","acceptedAnswer":{"@type":"Answer","text":"The Ollama server plus runner used 5.3 to 5.4 GB of resident memory with Llama 3.1 8B Q4_K_M loaded. Add the operating system and anything else you run: an 8 GB VPS is the practical minimum for 8B, 4 GB is enough for Llama 3.2 3B (2.5 GB measured)."}},
+{"@type":"Question","name":"Do more vCPU make Ollama faster on a VPS?","acceptedAnswer":{"@type":"Answer","text":"Less than you would think. Going from 4 to 8 vCPU raised Llama 3.2 1B from 27.7 to 39.3 tokens per second (median), Llama 3.1 8B from 9.0 to 10.2, and did not help Llama 3.2 3B (21.1 vs 20.8) on our shared server. CPU inference is limited by memory bandwidth, so RAM size matters more than core count."}},
+{"@type":"Question","name":"How long does Ollama take to load a model on a VPS?","acceptedAnswer":{"@type":"Answer","text":"Cold load from local disk took 3.1 to 3.2 s for Llama 3.2 1B, 6.0 s for 3B and 11.9 to 12.4 s for Llama 3.1 8B. Downloading the 8B model (4.58 GB) took 78 s."}}]}
+]}
+</script>
+</head>
+<body>
+<header class="top"><div class="wrap"><a class="brand" href="../">self<b>host</b>lab</a><span class="tag">measured on a real VPS, not copied from docs</span></div></header>
+<main class="wrap">
+<h1>Ollama on a VPS without GPU, measured</h1>
+<p class="meta">Ollama 0.40.17 · CPU only · 3 models x 2 CPU sizes x 3 runs · tested 22 Nov 2026</p>
+<div class="verdict"><strong>Short answer.</strong> On <strong>4 vCPU</strong> and no GPU, Ollama wrote <strong>28 tokens/s</strong> with Llama 3.2 1B, <strong>21 tokens/s</strong> with Llama 3.2 3B and <strong>9 tokens/s</strong> with Llama 3.1 8B. The 8B model needed <strong>5.4 GB of RAM</strong>: buy <strong>8 GB</strong> for 8B, 4 GB is enough for 3B. Doubling the vCPU helped far less than the RAM size.<br>
+<a class="cta" href="https://www.tkqlhce.com/click-101933542-12454592?sid=selfhostlab-ollama" rel="sponsored noopener" target="_blank">See Contabo 4 vCPU / 8 GB VPS (closest to our test) →</a></div>
+
+<p class="lede">Articles about Ollama on a VPS give ranges like "5 to 15 tokens per second" without saying on what machine. We downloaded the official Ollama binary, pinned it to 4 and then 8 CPU cores, ran the same prompt three times per model and read the speed Ollama reports and the memory of its processes. Every number below comes from that run.</p>
+
+<h2>Speed and memory per model</h2>
+<div class="tbl"><table>
+<tr><th>Model (quantization, size)</th><th>4 vCPU: tok/s (3 runs)</th><th>8 vCPU: tok/s (3 runs)</th><th>RAM used</th><th>Cold load</th></tr>
+<tr><td>Llama 3.2 1B (Q8_0, 1.23 GB)</td><td class="n"><b>27.7</b> (27.0 / 27.7 / 29.5)</td><td class="n"><b>39.3</b> (37.0 / 39.3 / 39.4)</td><td class="n">1.5 GB</td><td class="n">3.1 to 3.2 s</td></tr>
+<tr><td>Llama 3.2 3B (Q4_K_M, 1.88 GB)</td><td class="n"><b>21.1</b> (17.7 / 21.1 / 21.8)</td><td class="n"><b>20.8</b> (17.7 / 20.8 / 27.1)</td><td class="n">2.5 GB</td><td class="n">6.0 s</td></tr>
+<tr><td>Llama 3.1 8B (Q4_K_M, 4.58 GB)</td><td class="n"><b>9.0</b> (8.6 / 9.0 / 9.3)</td><td class="n"><b>10.2</b> (8.2 / 10.2 / 12.5)</td><td class="n">5.3 to 5.4 GB</td><td class="n">11.9 to 12.4 s</td></tr>
+</table></div>
+<p class="note">Bold = median of 3 runs. Speed = generation tokens per second reported by Ollama (eval_count / eval_duration), about 190 tokens generated per run. RAM = resident memory (RSS) of the Ollama server and its runner with the model loaded. Cold load = first request after start, model already on disk.</p>
+
+<figure>
+<svg viewBox="0 0 640 260" role="img" aria-label="Bar chart of Ollama tokens per second by model on 4 and 8 vCPU">
+<rect width="640" height="260" fill="#fbf8f0" stroke="#1d1b16"/>
+<line x1="40" y1="210" x2="620" y2="210" stroke="#1d1b16"/>
+<line x1="40" y1="170" x2="620" y2="170" stroke="#2b8a3e" stroke-dasharray="6 4"/><text x="250" y="186" font-family="JetBrains Mono,monospace" font-size="12" fill="#2b8a3e">10 tok/s</text>
+<g font-family="JetBrains Mono,monospace" font-size="12" fill="#1d1b16">
+<rect x="70" y="99" width="60" height="111" fill="#1d1b16"/><text x="78" y="93">27.7</text>
+<rect x="140" y="53" width="60" height="157" fill="#d9480f"/><text x="148" y="47">39.3</text>
+<text x="80" y="228">Llama 3.2 1B</text>
+<rect x="270" y="126" width="60" height="84" fill="#1d1b16"/><text x="278" y="120">21.1</text>
+<rect x="340" y="127" width="60" height="83" fill="#d9480f"/><text x="348" y="121">20.8</text>
+<text x="280" y="228">Llama 3.2 3B</text>
+<rect x="470" y="174" width="60" height="36" fill="#1d1b16"/><text x="482" y="168">9.0</text>
+<rect x="540" y="169" width="60" height="41" fill="#d9480f"/><text x="548" y="163">10.2</text>
+<text x="480" y="228">Llama 3.1 8B</text>
+<rect x="44" y="240" width="12" height="12" fill="#1d1b16"/><text x="62" y="250">4 vCPU</text>
+<rect x="140" y="240" width="12" height="12" fill="#d9480f"/><text x="158" y="250">8 vCPU</text>
+</g></svg>
+<figcaption>Median generation speed of each model on 4 and 8 vCPU, drawn to scale. Our measurements, 22 Nov 2026.</figcaption>
+</figure>
+
+<h2>What 4 more vCPU buy you</h2>
+<p>Doubling the cores raised the 1B model by 42 % and the 8B model by 13 %, and gave nothing on the 3B model. On a CPU, each generated token means reading the whole model from RAM, so memory bandwidth caps the speed long before the core count does. For a VPS budget, that means: pay for the <strong>RAM the model needs</strong> first, extra vCPU second.</p>
+
+<h2>Which VPS for which model</h2>
+<p>Add about 0.5 to 1 GB for the operating system, and the RAM of whatever else runs next to Ollama (Open WebUI, n8n, a database). From our numbers:</p>
+<div class="tbl"><table>
+<tr><th>You want to run</th><th>RAM to buy</th><th>Expected speed (our 4 vCPU test)</th><th>Example plan (price read on the provider site)</th></tr>
+<tr><td>Llama 3.2 1B (classification, short replies)</td><td class="n">4 GB</td><td class="n">about 28 tok/s</td><td>Hostinger KVM 1: 1 vCPU, 4 GB, $6.49/mo on 24 months, renews $11.99/mo (read 20 Nov 2026). Only 1 vCPU: expect less than our 4-core figure.</td></tr>
+<tr><td>Llama 3.2 3B (chat, summaries)</td><td class="n">4 GB, 8 GB with Open WebUI</td><td class="n">about 21 tok/s</td><td>Contabo Cloud VPS 4: 4 vCPU, 8 GB, 4.40 EUR/mo for 24 months (read 21 Nov 2026), same CPU family as our test.</td></tr>
+<tr><td>Llama 3.1 8B (better answers, slower)</td><td class="n">8 GB minimum</td><td class="n">about 9 tok/s</td><td>Contabo Cloud VPS 4 (8 GB) as above, or Hostinger KVM 2: 2 vCPU, 8 GB, $8.79/mo on 24 months, renews $14.99/mo (read 20 Nov 2026).</td></tr>
+</table></div>
+<p><a class="cta" href="https://www.tkqlhce.com/click-101933542-12454592?sid=selfhostlab-ollama" rel="sponsored noopener" target="_blank">Contabo Cloud VPS plans →</a> <a class="cta" href="https://www.hostg.xyz/aff_c?offer_id=815&amp;aff_id=246839&amp;url=https%3A%2F%2Fwww.hostinger.com%2Fvps-hosting%3Futm_medium%3Daffiliate%26utm_source%3Daff246839%26utm_campaign%3D815%26session%3D%7Btransaction_id%7D&amp;aff_sub=selfhostlab-ollama" rel="sponsored noopener" target="_blank">Hostinger KVM VPS prices →</a></p>
+
+<h2>Limits of this test</h2>
+<ul>
+<li>The test server (Contabo Cloud VPS, 8 AMD EPYC vCPU, 23.5 GB RAM) also runs other services. Its 1-minute load average was 4.8 to 6.5 during the 4-core runs and climbed to 16.9 during the 8-core runs, which partly explains why 8 cores helped so little. Ollama ran at top CPU priority (nice -19) to reduce that effect. A quiet server of the same size should do as well or better.</li>
+<li>One prompt (a 150-word technical answer, 45 to 60 prompt tokens, 200 tokens max, temperature 0). Long prompts and long contexts are slower and use more RAM.</li>
+<li>Smaller VPS plans have fewer and sometimes slower cores than our test: treat the speeds as a ceiling for a 1 or 2 vCPU plan.</li>
+<li>CPU only, no GPU. Ollama 0.40.17 official Linux binary, installed without Docker, models removed after the test.</li>
+</ul>
+
+<h2>Reproduce it</h2>
+<pre><code>curl -sL -o ollama.tar.zst https://ollama.com/download/ollama-linux-amd64.tar.zst
+mkdir dist &amp;&amp; tar --zstd -xf ollama.tar.zst -C dist
+OLLAMA_HOST=127.0.0.1:11499 taskset -c 0-3 dist/bin/ollama serve &amp;
+OLLAMA_HOST=127.0.0.1:11499 dist/bin/ollama pull llama3.1:8b
+curl -s 127.0.0.1:11499/api/generate -d '{"model":"llama3.1:8b","prompt":"...","stream":false,
+  "options":{"num_predict":200,"temperature":0,"seed":42,"num_thread":4}}' | jq '.eval_count/.eval_duration*1e9'</code></pre>
+<p>Going further: if you plan to run <a href="../n8n-self-hosted-requirements/">n8n next to Ollama</a>, add its 555 to 850 MB to the RAM above.</p>
+<p class="note">Some links on this page are affiliate links: we may earn a commission if you buy, at no extra cost to you. Measurements are never changed for a sponsor.</p>
+</main>
+<footer><div class="wrap">SelfHostLab · 2026</div></footer>
+</body></html>
